@@ -7,6 +7,7 @@ const registerEvents = ["startClock", "stopClock", "resetClock", "saveLap", "del
 const timeDisplayElement = "#timeStamp";
 const saveLapNameElement = "#saveLapName";
 const lapTableName = "#lapTable";
+const saveLapErrorElement = "#saveLapError";
 const sessionType = "local";
 
 (function () {
@@ -23,7 +24,7 @@ const sessionType = "local";
 
 function _init () {
     //initialise function - create the Module loader for require JS.
-    requirejs(["util/Helper", "util/DateHelper", "util/SessionStorage", "components/StopWatch"], function(Helper, DateHelper, SessionStorage, StopWatch) {
+    requirejs(["util/Helper", "util/DateHelper", "util/SessionStorage", "components/StopWatch", "common/Event"], function(Helper, DateHelper, SessionStorage, StopWatch, Event) {
         
         
         var helper = new Helper();
@@ -157,6 +158,18 @@ function _init () {
             }
         }
 
+        function _handleEvent (name, element) {
+            var result = new Event({name : name});
+            if (helper.isNotNull(result)) {
+                try {
+                    element.addEventListener(name, saveLapError());
+                    element.dispatchEvent(result.getEvent());
+                } catch (e) {
+                    console.error("Unable to throw event", e);
+                }
+            }
+        }
+
         /*
             clears the table contents
                 returns void
@@ -204,6 +217,9 @@ function _init () {
             if (helper.isNotNull(sessions)) {
                 try {
                     result = _save(document.querySelector(saveLapNameElement).value, watch.formatTime(fullDateStringName));
+                    if (!result) {
+                        _handleEvent("saveLapError", document.querySelector(saveLapErrorElement));
+                    }
                 } catch (e) {
                     console.error("Unable to get Elements, or current time", e);
                 }
@@ -219,6 +235,10 @@ function _init () {
                     console.error("Unable to delete laps", e);
                 }
             }
+        }
+
+        function saveLapError () {
+            alert("Lap time name already registered");
         }
     
     });
