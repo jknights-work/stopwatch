@@ -1,14 +1,16 @@
+"use strict"
+
 //constants
 const defaultTime = "00:00:00:00";
 const fullDateStringName = "fullTime";
 const registerEvents = ["startClock", "stopClock", "resetClock", "saveLap", "deleteAllLaps"];
-const timeDisplayElement = "timeStamp";
-const saveLapNameElement = "saveLapName";
-const lapTableName = "lapTable";
+const timeDisplayElement = "#timeStamp";
+const saveLapNameElement = "#saveLapName";
+const lapTableName = "#lapTable";
 const sessionType = "local";
 
 (function () {
-
+    //Self invoking function to detect when page ready
     var pageState = setInterval(function(){
         if (document.readyState === 'complete') {
             clearInterval(pageState);
@@ -20,17 +22,18 @@ const sessionType = "local";
 
 
 function _init () {
-
+    //initialise function - create the Module loader for require JS.
     requirejs(["util/Helper", "util/DateHelper", "util/SessionStorage", "components/StopWatch"], function(Helper, DateHelper, SessionStorage, StopWatch) {
         
         
-        helper = new Helper();
-        watch = new StopWatch();
-        sessions = new SessionStorage();
-        dateHelper = new DateHelper();
-        timer = null;
+        var helper = new Helper();
+        var watch = new StopWatch();
+        var sessions = new SessionStorage();
+        var dateHelper = new DateHelper();
+        var timer = null;
 
         try {
+            //register event listeners with their corresponding html element
             registerEvents.forEach (function (id){
                 var el = document.getElementById(id);
                 if (el !== null) {
@@ -42,30 +45,50 @@ function _init () {
             console.error("Unable to register Elements", e);
         }
 
+        //'_' denotes "private" methods
+
+        /*
+            updates the HTML with new time (every millisecond)
+                returns void
+        */
         function _update() {
             try {
-                document.getElementById(timeDisplayElement).innerHTML = watch.formatTime(fullDateStringName);
+                document.querySelector(timeDisplayElement).innerHTML = watch.formatTime(fullDateStringName);
             } catch (e) {
                 console.error("Unable to update clock", e);
             }
         }
-    
+        /*  starts the stopwatch - called from startClock()
+            creates an interval which hitches onto update. 
+                returns void
+        */
         function _start() {
             timer = setInterval(_update, 1);
             watch.startClock();
         }
 
+        /*stops the stopwatch - called from startClock()
+                returns void
+        */
         function _stop() {
             clearInterval(timer);
             watch.stopClock();
         }
 
+        /*
+            resets the clock to 0
+                returns void
+        */
         function _reset() {
             clearInterval(timer);
-            document.getElementById(timeDisplayElement).innerHTML = defaultTime;
+            document.querySelector(timeDisplayElement).innerHTML = defaultTime;
             watch.resetClock();
         }
 
+        /*
+            saves the lap time
+                returns boolean
+        */
         function _save (name, value) {
             var result = false;
             try { 
@@ -79,10 +102,14 @@ function _init () {
             return result;
         }
 
+        /*
+            updates the lap table everytime _save() is successful
+                returns void
+        */
         function _updateLapTable (name, date) {
             try { 
 
-                var table = document.getElementById(lapTableName).getElementsByTagName('tbody')[0];
+                var table = document.querySelector(lapTableName).getElementsByTagName('tbody')[0];
                 var session = sessions.getSession(name);
 
                 var row = table.insertRow(0);
@@ -99,11 +126,16 @@ function _init () {
             }
         }
 
+        /*
+            populates the laptimes which are present in localStorage
+            run on init()
+                returns void
+        */
         function _populateLapTable () {
 
             try { 
 
-                var table = document.getElementById(lapTableName).getElementsByTagName('tbody')[0];
+                var table = document.querySelector(lapTableName).getElementsByTagName('tbody')[0];
                 var sessionList = sessions.getAllSessions();
 
                 Object.keys(sessionList).forEach(function (key) {
@@ -125,14 +157,22 @@ function _init () {
             }
         }
 
+        /*
+            clears the table contents
+                returns void
+        */
         function _clearTable () {
-            var table = document.getElementById(lapTableName).getElementsByTagName('tbody')[0];
+            var table = document.querySelector(lapTableName).getElementsByTagName('tbody')[0];
             for(var i = 0; i < table.rows.length;)
             {   
                 table.deleteRow(i);
             }
         }
 
+        /*
+            deletes the laptimes which are present in localStorage
+                returns void
+        */
         function _deleteLaps  () {
             if (sessions.removeAllSessions()) {
                 _clearTable();
@@ -163,7 +203,7 @@ function _init () {
             var result = false;
             if (helper.isNotNull(sessions)) {
                 try {
-                    result = _save(document.getElementById(saveLapNameElement).value, watch.formatTime(fullDateStringName));
+                    result = _save(document.querySelector(saveLapNameElement).value, watch.formatTime(fullDateStringName));
                 } catch (e) {
                     console.error("Unable to get Elements, or current time", e);
                 }
@@ -174,7 +214,7 @@ function _init () {
         function deleteAllLaps () {
             if (helper.isNotNull(sessions)) {
                 try {
-                    result = _deleteLaps();
+                     _deleteLaps();
                 } catch (e) {
                     console.error("Unable to delete laps", e);
                 }

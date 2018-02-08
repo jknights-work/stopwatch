@@ -1,0 +1,37 @@
+table {
+    margin: 0 auto;
+    width: 100%;
+}
+
+.stopwatch-card {
+    width: 100%;
+}
+
+.mdl-layout-title {
+    background: url(https://d3suqxyr95ccqd.cloudfront.net/sites/all/themes/deeson_2016/dist/img/deeson-logo.svg) no-repeat;
+    width: 143px;
+    height: 26px;
+    margin: 8px 0 0;
+    overflow: hidden;
+    display: block;
+}
+
+.controls {
+    padding: 10px;
+    text-align: center;
+    margin: 0 auto;
+}
+
+h1 {
+    text-align: center;
+}
+
+h1#timeStamp {
+    font-size: 4em;
+}
+
+.lapTimes {
+    margin: 0 auto;
+}
+
+
